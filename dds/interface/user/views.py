@@ -16,7 +16,7 @@ from .serializer import (
     OrganizationAddUserSerializer,
     UserListSerializer,
 )
-from .. import open_api
+# from .. import open_api
 from .pagination import OrganizationUserPagination
 
 # from .filters import OrganizationUserFilter
@@ -59,38 +59,16 @@ class UserViewSet(viewsets.ViewSet):
         return UserSerializer
 
 
-class OrganizationUserViewSet(viewsets.ViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    pagination_class = OrganizationUserPagination
-
-    def initial(self, request, *args, **kwargs):
-        return super().initial(request, *args, **kwargs)
-
-    def get_queryset(self):
-        user_app_services = UserAppServices()
-        queryset = user_app_services.list_users()
-        return queryset
-
-    def get_serializer_class(self):
-        if self.action == "add_user":
-            return OrganizationAddUserSerializer
-
-        if self.action == "list":
-            return UserListSerializer
-
-    @action(detail=True, methods=["post"], name="add_user")
-    def add_user(self, request, pk):
+    
+    @action(detail=False, methods=["post"], name="create_user")
+ 
+    def sign_up(self, request):
         serializer = self.get_serializer_class()
         serializer_data = serializer(data=request.data)
         if serializer_data.is_valid():
             try:
-                user_data = UserAppServices(log=self.log).add_user_from_dict(
-                    data=serializer_data.data, user=request.user, company_id=pk
+                user_data = UserAppServices(log=self.log).create_user_from_dict(
+                    data=serializer_data.data
                 )
                 serialized_user_data = UserSerializer(
                     instance=user_data,
@@ -99,9 +77,12 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                     },
                 )
                 return response(
-                    status_code=status.HTTP_201_CREATED,
+                    status=status.HTTP_201_CREATED,
                     data=serialized_user_data.data,
-                    message="Successfully sent invitation to new user",
+                   
                 )
-            except Exception as uae:
-                return response(data={"message": ""})
+            except Exception as use:
+                return response(
+                    {"message": "User has not been created from provided data"}
+                )
+           

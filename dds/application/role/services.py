@@ -10,7 +10,7 @@ from dds.domain.company.models import CompanyID
 from dds.domain.role.services import RoleServices
 from dds.domain.user.models import User
 from dds.domain.role.user_role.services import UserRoleServices
-from utils.custom_exceptions import (
+from dds.utils.custom_exceptions import (
     UserRoleException,
     RoleException,
     RoleNameException,
@@ -18,7 +18,7 @@ from utils.custom_exceptions import (
 )
 
 
-from utils import UserID
+from dds.utils.utils import UserID
 
 
 class RolesAppServices:

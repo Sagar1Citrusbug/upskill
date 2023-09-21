@@ -24,7 +24,7 @@ SECRET_KEY = "django-insecure-5@_tr(a-q4^3*@mx=6$gv@)uh*o!8umsl@*k*z@srkjng&d6nd
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+ENABLE_API = True
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "user.User"
@@ -36,7 +36,11 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.staticfiles",  
+      "drf_spectacular",
+      "debug_toolbar",
+      "rest_framework",
+
     # app modules
     "dds.domain.user",
     "dds.domain.role",
@@ -52,9 +56,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
-ROOT_URLCONF = "dds.urls"
+ROOT_URLCONF = "dds.interface.urls"
 
 TEMPLATES = [
     {

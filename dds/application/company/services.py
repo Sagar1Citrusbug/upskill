@@ -2,7 +2,7 @@ from django.db.models.query import QuerySet
 from dds.domain.company.models import Company
 from dds.domain.company.services import CompanyServices
 from dds.application.role.services import UserRolesAppServices
-from utils.custom_exceptions import (
+from dds.utils.custom_exceptions import (
     CompanyNotFoundException,
 )
 
