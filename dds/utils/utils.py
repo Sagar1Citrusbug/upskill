@@ -1,6 +1,17 @@
 import uuid
 from dataclasses import dataclass
 from dataclass_type_validator import dataclass_validate
+from django.conf import settings
+import random
+import string
+
+
+def generate_password() -> str:
+    # Generate a random password of length 16
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = "".join(random.choice(characters) for _ in range(16))
+
+    return password
 
 
 def asdict(o, skip_empty=False):

@@ -4,13 +4,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.auth.hashers import make_password
 from django.core.validators import validate_email
-from ...utils import asdict
+from dds.utils.utils import asdict
 from dataclasses import dataclass, field
 from dataclass_type_validator import dataclass_validate
 
 import uuid
 
-from base_model import AuditModelMixin
+from ...utils.base_model import AuditModelMixin
 
 from typing import Union
 

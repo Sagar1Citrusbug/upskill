@@ -4,7 +4,7 @@ from django.db import models
 from dataclasses import dataclass
 
 import uuid
-from base_model import AuditModelMixin
+from dds.utils.base_model import AuditModelMixin
 
 
 @dataclass(frozen=True)

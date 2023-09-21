@@ -4,8 +4,8 @@ from django.db import models
 
 from dataclasses import dataclass
 
-from base_model import AuditModelMixin
-from dds.utils import UserID
+from dds.utils.base_model import AuditModelMixin
+from dds.utils.utils import UserID
 
 from dds.domain.company.models import CompanyID
 from dds.domain.role.models import RoleID
