@@ -1,5 +1,5 @@
 """
-WSGI config for upskill project.
+WSGI config for dds project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'upskill.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dds.settings")
 
 application = get_wsgi_application()
