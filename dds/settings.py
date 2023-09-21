@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # app modules
     "dds.domain.user",
+    "dds.domain.role",
+    "dds.domain.role.user_role",
+    "dds.domain.company",
 ]
 
 MIDDLEWARE = [
