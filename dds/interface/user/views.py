@@ -1,32 +1,25 @@
-from django.contrib.auth import authenticate
-from django.utils.decorators import decorator_from_middleware_with_args
-
-# from drf_spectacular.utils import extend_schema_view
-from rest_framework import viewsets, response
+from django.http import JsonResponse
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework import status
 
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
 
-# local imports
 from .serializer import (
     UserSerializer,
-    OrganizationAddUserSerializer,
     UserListSerializer,
+    UserCreateSerializer,
 )
-# from .. import open_api
+from dds.utils.custom_response import APIResponse
 from .pagination import OrganizationUserPagination
 
-# from .filters import OrganizationUserFilter
 
 # app imports
 from dds.application.user.services import UserAppServices
 
 from dds.utils.custom_exceptions import (
+    AddUserException,
     UserAlreadyExistsException,
-    MailNotSendException,
     UserDeletionException,
 )
 
@@ -56,33 +49,58 @@ class UserViewSet(viewsets.ViewSet):
         return context
 
     def get_serializer_class(self):
+        if self.action == "create_user":
+            return UserCreateSerializer
+        if self.action == "list":
+            return UserListSerializer
         return UserSerializer
 
-
-    
     @action(detail=False, methods=["post"], name="create_user")
- 
-    def sign_up(self, request):
+    def create_user(self, request):
         serializer = self.get_serializer_class()
+        print(serializer, "serializer")
         serializer_data = serializer(data=request.data)
+        print(serializer_data, "serializer_data")
         if serializer_data.is_valid():
             try:
-                user_data = UserAppServices(log=self.log).create_user_from_dict(
+                user_data = UserAppServices().create_user_from_dict(
                     data=serializer_data.data
                 )
+                print(user_data, "user data ------ in ---- sign up function")
                 serialized_user_data = UserSerializer(
                     instance=user_data,
-                    context={
-                        "log": self.log,
-                    },
                 )
-                return response(
-                    status=status.HTTP_201_CREATED,
+                return APIResponse(
+                    status_code=status.HTTP_201_CREATED,
                     data=serialized_user_data.data,
-                   
+                    message=f"Successfully sign-up for user.",
                 )
-            except Exception as use:
-                return response(
-                    {"message": "User has not been created from provided data"}
+            except AddUserException as use:
+                return APIResponse(
+                    status_code=use.status_code,
+                    errors=use.error_data(),
+                    message=f"An error occurred while Sign-up.",
+                    for_error=True,
                 )
-           
+            except UserAlreadyExistsException as uae:
+                return APIResponse(
+                    status_code=uae.status_code,
+                    errors=uae.error_data(),
+                    message=f"User already exists",
+                    for_error=True,
+                )
+
+            except Exception as e:
+                return APIResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    errors=e.args,
+                    for_error=True,
+                    general_error=True,
+                )
+        print("-----------hererer=============")
+        return APIResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            errors=serializer_data.errors,
+            message=f"Incorrect email or password",
+            for_error=True,
+        )

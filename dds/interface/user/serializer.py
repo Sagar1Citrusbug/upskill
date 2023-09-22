@@ -11,6 +11,14 @@ class CompanySerializer(serializers.ModelSerializer):
         exclude = ["created_at"]
 
 
+class UserCreateSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=150, required=True)
+    first_name = serializers.CharField(max_length=60, required=True)
+    last_name = serializers.CharField(max_length=60, required=True)
+    password = serializers.CharField(max_length=60, required=True)
+    company_name = serializers.CharField(max_length=100, required=True)
+
+
 class UserSerializer(serializers.ModelSerializer):
     company_details = serializers.SerializerMethodField()
 

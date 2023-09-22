@@ -25,17 +25,29 @@ class RolesAppServices:
     def __init__(self) -> None:
         self.role_services = RoleServices()
 
-    def create_role_by_dict(self, user: User, data: dict) -> Role:
+    def list_roles(
+        self,
+    ) -> QuerySet[Role]:
+        """This method will return list of Roles."""
+
+        return (
+            self.role_services.get_role_repo()
+            .filter(is_active=True)
+            .exclude(name__icontains="ceo")
+        )
+
+    def create_role_by_dict(self, data: dict) -> Role:
         name = data.get("name")
         if not re.match("^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$", name):
             raise RoleNameException(
-                "role-name-exception", "Role name should be alphanumeric.", self.log
+                "role-name-exception", "Role name should be alphanumeric."
             )
 
-        exists_role = self.list_roles(user=user).filter(name=name.lower())
+        exists_role = self.list_roles().filter(name=name.lower())
+
         if exists_role:
             raise RoleNameAlreadyExistsException(
-                "role-exist-exception", "This role name is already exists.", self.log
+                "role-exist-exception", "This role name is already exists."
             )
         try:
             with transaction.atomic():
@@ -44,12 +56,12 @@ class RolesAppServices:
                 role_obj.save()
                 return role_obj
         except Exception as e:
-            raise RoleException(item="role-exception", message=str(e), log=self.log)
+            raise RoleException(item="role-exception", message=str(e))
 
 
 class UserRolesAppServices:
     def __init__(self) -> None:
-        self.role_app_services = RolesAppServices(log=self.log)
+        self.role_app_services = RolesAppServices()
         self.user_role_services = UserRoleServices()
 
     def list_user_roles(self) -> QuerySet[UserRole]:

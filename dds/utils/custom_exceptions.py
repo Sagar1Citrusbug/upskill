@@ -88,8 +88,16 @@ class RoleException(BaseException):
     pass
 
 
+class CompanyException(BaseException):
+    pass
+
+
 # done
 class CompanyNotExistsException(Status404Exception):
+    pass
+
+
+class CompanyAlreadyExistsException(Status409Exception):
     pass
 
 

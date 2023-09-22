@@ -1,5 +1,6 @@
 from django.db.models.query import QuerySet
 from django.db import transaction
+from django.http import JsonResponse
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from dds.domain.user.models import (
@@ -27,8 +28,8 @@ class UserAppServices:
     ) -> None:
         self.user_services = UserServices()
 
-        self.company_app_services = CompanyAppServices(log=self.log)
-        self.user_roles_app_service = UserRolesAppServices(log=self.log)
+        self.company_app_services = CompanyAppServices()
+        self.user_roles_app_service = UserRolesAppServices()
 
     def list_users(self) -> QuerySet[User]:
         """This method will return list of users."""
@@ -45,9 +46,7 @@ class UserAppServices:
             user_exists = self.user_services.get_user_repo().filter(email=email)
             if user_exists:
                 raise UserAlreadyExistsException(
-                    "User already Exists",
-                    f"{user_exists[0].email} already exists.",
-                    self.log,
+                    "User already Exists", f"{user_exists[0].email} already exists."
                 )
             user_personal_data = UserPersonalData(
                 email=email, first_name=first_name, last_name=last_name, username=email
@@ -61,31 +60,16 @@ class UserAppServices:
                     base_permissions=user_base_permissions,
                 )
                 user_obj.save()
-                if settings.ENABLE_MAILS:
-                    template_data = dict(
-                        subject="Welcome to Focus Power - Verify your email address",
-                        verification_url=self.token_url_generator(
-                            user=user_obj, use_case="new_user"
-                        ),
-                        first_name=user_obj.first_name,
-                    )
-                    self.mail_services.send_mail(
-                        email=user_obj.email,
-                        subject=template_data.get("subject"),
-                        template_data=template_data,
-                        template_id=settings.NEW_USER_VERIFICATION_EMAIL_TEMPLATE,
-                    )
 
                 return user_obj
             except Exception as e:
-                if isinstance(e, MailNotSendException):
-                    raise e
+                raise e
 
     def get_user_by_pk(self, pk) -> User:
         try:
             return self.list_users().get(pk=pk)
         except Exception as e:
-            raise Exception()
+            raise e
 
     def delete_user_by_pk(self, pk) -> User:
         instance = self.get_user_by_pk(pk=pk)
@@ -95,20 +79,15 @@ class UserAppServices:
     def add_user_from_dict(self, data: dict, user: User, company_id: str) -> User:
         with transaction.atomic():
             email = data.get("email", None)
-            reporting_to_id = data.get("reporting_to", None)
             first_name = data.get("first_name", None)
             last_name = data.get("last_name", None)
-
             user_exists = self.user_services.get_user_repo().filter(email=email)
             if user_exists:
                 raise UserAlreadyExistsException(
                     "User already exists",
                     f"{user_exists[0].email} already exists.",
-                    self.log,
                 )
-            senior_obj = self.list_users().filter(id=reporting_to_id)
-            if not senior_obj:
-                raise Exception()
+
             user_personal_data = UserPersonalData(
                 email=email,
                 username=email,
@@ -180,7 +159,7 @@ class UserAppServices:
         with transaction.atomic():
             if str(user.id) == user_id:
                 raise UserDeletionException(
-                    "user-deletion-exception", "This user cannot be deleted", self.log
+                    "user-deletion-exception", "This user cannot be deleted"
                 )
             self.__check_user_division_ceo(user=user)
 
