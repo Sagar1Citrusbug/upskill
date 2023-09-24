@@ -10,7 +10,7 @@ from dds.utils.custom_exceptions import (
     RoleNameAlreadyExistsException,
 )
 from dds.utils.custom_response import APIResponse
-from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 
 class RoleViewSet(viewsets.ViewSet):

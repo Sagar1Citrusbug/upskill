@@ -6,7 +6,7 @@ from rest_framework import status
 
 
 from .serializer import (
-    UserSerializer,
+  
     UserListSerializer,
     UserCreateSerializer,
 )
@@ -36,8 +36,7 @@ class UserViewSet(viewsets.ViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
-
-    # access_control = decorator_from_middleware_with_args(MiddlewareWithLogger)
+    paginator_class = OrganizationUserPagination
 
     def get_queryset(self):
         user_app_services = UserAppServices()
@@ -49,31 +48,25 @@ class UserViewSet(viewsets.ViewSet):
         return context
 
     def get_serializer_class(self):
-        if self.action == "create_user":
+        if self.action == "create":
             return UserCreateSerializer
-        if self.action == "list":
-            return UserListSerializer
-        return UserSerializer
+        
+        return UserListSerializer
+        
 
-    @action(detail=False, methods=["post"], name="create_user")
-    def create_user(self, request):
+    def create(self, request):
         serializer = self.get_serializer_class()
-        print(serializer, "serializer")
         serializer_data = serializer(data=request.data)
-        print(serializer_data, "serializer_data")
         if serializer_data.is_valid():
             try:
                 user_data = UserAppServices().create_user_from_dict(
                     data=serializer_data.data
                 )
-                print(user_data, "user data ------ in ---- sign up function")
-                serialized_user_data = UserSerializer(
-                    instance=user_data,
-                )
+            
                 return APIResponse(
                     status_code=status.HTTP_201_CREATED,
-                    data=serialized_user_data.data,
-                    message=f"Successfully sign-up for user.",
+                    data=serializer_data.data,
+                    message=f"user created Successfully.",
                 )
             except AddUserException as use:
                 return APIResponse(
@@ -91,6 +84,7 @@ class UserViewSet(viewsets.ViewSet):
                 )
 
             except Exception as e:
+                print(e, "---------error-----------")
                 return APIResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     errors=e.args,
@@ -104,3 +98,28 @@ class UserViewSet(viewsets.ViewSet):
             message=f"Incorrect email or password",
             for_error=True,
         )
+
+
+    def list(self, request):
+        serializer = self.get_serializer_class()
+        try:
+            queryset = self.get_queryset()
+            paginator = self.paginator_class()
+            paginated_queryset = paginator.paginate_queryset(queryset, request)
+            serializer_data = serializer(
+                paginated_queryset,
+                many=True,
+               
+            )
+            paginated_data = paginator.get_paginated_response(serializer_data.data).data
+            message = "Successfully listed all Users."
+            return APIResponse(data=paginated_data, message=message)
+
+        except Exception as e:
+            print(e, "------- error ---------")
+            return APIResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                errors=e.args,
+                for_error=True,
+                general_error=True,
+            )

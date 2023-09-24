@@ -14,3 +14,6 @@ class CompanyServices:
 
     def get_company_by_id(self, id: str) -> Company:
         return Company.objects.get(id=id)
+
+    def get_company_by_user_id(self, user_id):
+        pass

@@ -19,10 +19,10 @@ class CompanyViewSet(viewsets.ViewSet):
     # permission_classes = (IsAuthenticated,)
     pagination_class = CompanyPagination
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
 
-        return context
+    #     return context
 
     def get_queryset(self):
         self.company_app_services = CompanyAppServices()
@@ -50,7 +50,7 @@ class CompanyViewSet(viewsets.ViewSet):
                 },
             )
             paginated_data = paginator.get_paginated_response(serializer_data.data).data
-            message = "Successfully listed all roles."
+            message = "Successfully listed all Companies."
             return APIResponse(data=paginated_data, message=message)
 
         except Exception as e:
