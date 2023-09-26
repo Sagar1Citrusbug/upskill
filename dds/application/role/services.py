@@ -1,24 +1,15 @@
 import re
-from typing import List
 from django.db.models.query import QuerySet
 from django.db import transaction
-from django.conf import settings
 
-from dds.domain.role.models import Role, RoleID
-from dds.domain.role.user_role.models import UserRole
-from dds.domain.company.models import CompanyID
+from dds.domain.role.models import Role
 from dds.domain.role.services import RoleServices
-from dds.domain.user.models import User
-from dds.domain.role.user_role.services import UserRoleServices
+
 from dds.utils.custom_exceptions import (
-    UserRoleException,
     RoleException,
     RoleNameException,
     RoleNameAlreadyExistsException,
 )
-
-
-from dds.utils.utils import UserID
 
 
 class RolesAppServices:
@@ -57,33 +48,3 @@ class RolesAppServices:
                 return role_obj
         except Exception as e:
             raise RoleException(item="role-exception", message=str(e))
-
-
-class UserRolesAppServices:
-    def __init__(self) -> None:
-        self.role_app_services = RolesAppServices()
-        self.user_role_services = UserRoleServices()
-
-    def list_user_roles(self) -> QuerySet[UserRole]:
-        """This method will return list of UserRoles."""
-        return self.user_role_services.get_user_role_repo().filter(is_active=True)
-
-  
-    def create_user_role(self, user_id, company_id, role_id) -> UserRole:
-        try:
-            with transaction.atomic():
-                role_id = RoleID(value=role_id)
-                user_id = UserID(value=user_id)
-                company_id = CompanyID(value=company_id)
-                user_role_factory = self.user_role_services.get_user_role_factory()
-                user_role_obj = user_role_factory.build_entity_with_id(
-                    role_id=role_id, user_id=user_id, company_id=company_id
-                )
-                user_role_obj.save()
-                return user_role_obj
-        except Exception as e:
-            raise UserRoleException("user-role-exception", str(e))
-
-    def get_user_role_by_user_id(self, user_id) -> UserRole:
-        return self.list_user_roles().get(user_id=user_id)
-

@@ -48,7 +48,6 @@ class CompanyFactory:
 
     @staticmethod
     def build_entity(
-        
         name: str,
     ) -> Company:
         return Company(name=name)

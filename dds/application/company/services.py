@@ -2,7 +2,6 @@ from django.db.models.query import QuerySet
 from django.db import transaction
 from dds.domain.company.models import Company
 from dds.domain.company.services import CompanyServices
-from dds.application.role.services import UserRolesAppServices
 from dds.utils.custom_exceptions import (
     CompanyException,
     CompanyNotFoundException,
@@ -13,11 +12,10 @@ from dds.utils.custom_exceptions import (
 class CompanyAppServices:
     def __init__(self) -> None:
         self.company_services = CompanyServices()
-        self.user_role_app_services = UserRolesAppServices()
 
     def list_companies(self) -> QuerySet[Company]:
         """This method will return list of Companies."""
-        
+
         return self.company_services.get_company_repo().filter(is_active=True)
 
     def create_company(self, data: str) -> Company:
@@ -30,13 +28,10 @@ class CompanyAppServices:
         try:
             with transaction.atomic():
                 company_factory = self.company_services.get_company_factory()
-                company_obj = company_factory.build_entity(
-                    name=company_name.lower()
-                )
+                company_obj = company_factory.build_entity(name=company_name.lower())
                 company_obj.save()
                 return company_obj
         except Exception as e:
-            print(e,"--------error---------")
             raise CompanyException(item="company-exception", message=str(e))
 
     def get_company_by_user_id(self, user_id) -> QuerySet[Company]:
