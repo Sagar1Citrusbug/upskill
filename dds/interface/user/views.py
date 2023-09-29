@@ -1,9 +1,8 @@
-from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework import status
-
+from rest_framework.permissions import IsAuthenticated
 
 from .serializer import (
     # UserListSerializer,
@@ -35,6 +34,7 @@ class UserViewSet(viewsets.ViewSet):
     API endpoint that allows users to be viewed or edited.
     """
 
+    permission_classes = [IsAuthenticated]
     paginator_class = OrganizationUserPagination
 
     def get_queryset(self):
@@ -50,16 +50,14 @@ class UserViewSet(viewsets.ViewSet):
         if self.action == "create":
             return UserCreateSerializer
 
-        # return UserListSerializer
-
     def create(self, request):
+        req = list(filter(lambda x: not x.startswith("__"), dir(request)))
+        print(req)
         serializer = self.get_serializer_class()
         serializer_data = serializer(data=request.data)
         if serializer_data.is_valid():
             try:
-                user_data = UserAppServices().create_user_from_dict(
-                    data=serializer_data.data
-                )
+                UserAppServices().create_user_from_dict(data=serializer_data.data)
 
                 return APIResponse(
                     status_code=status.HTTP_201_CREATED,
@@ -81,40 +79,16 @@ class UserViewSet(viewsets.ViewSet):
                     for_error=True,
                 )
             except Exception as e:
-                print(e, "---------error-----------")
                 return APIResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     errors=e.args,
                     for_error=True,
                     general_error=True,
                 )
-        print("-----------hererer=============")
+
         return APIResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             errors=serializer_data.errors,
             message=f"Incorrect email or password",
             for_error=True,
         )
-
-    # def list(self, request):
-    #     serializer = self.get_serializer_class()
-    #     try:
-    #         queryset = self.get_queryset()
-    #         paginator = self.paginator_class()
-    #         paginated_queryset = paginator.paginate_queryset(queryset, request)
-    #         serializer_data = serializer(
-    #             paginated_queryset,
-    #             many=True,
-    #         )
-    #         paginated_data = paginator.get_paginated_response(serializer_data.data).data
-    #         message = "Successfully listed all Users."
-    #         return APIResponse(data=paginated_data, message=message)
-
-    #     except Exception as e:
-    #         print(e, "------- error ---------")
-    #         return APIResponse(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             errors=e.args,
-    #             for_error=True,
-    #             general_error=True,
-    #         )

@@ -1,11 +1,9 @@
 from rest_framework import viewsets
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from dds.interface.company.pagination import CompanyPagination
 from dds.application.company.services import CompanyAppServices
 from .serializer import CompanyRetrieveSerializer, CompanySerializer
 from dds.utils.custom_exceptions import (
-    CompanyNotExistsException,
     CompanyAlreadyExistsException,
 )
 from dds.utils.custom_response import APIResponse
@@ -16,13 +14,7 @@ class CompanyViewSet(viewsets.ViewSet):
     API endpoint that allows users to be viewed or edited.
     """
 
-    # permission_classes = (IsAuthenticated,)
     pagination_class = CompanyPagination
-
-    # def get_serializer_context(self):
-    #     context = super().get_serializer_context()
-
-    #     return context
 
     def get_queryset(self):
         self.company_app_services = CompanyAppServices()
